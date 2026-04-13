@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>جدول الحصص المتقدم - حفظ تلقائي وحذف</title>
+    <title>جدول الحصص الشامل - معلم واحد لجميع الأيام</title>
     <style>
         * {
             margin: 0;
@@ -13,7 +13,7 @@
         }
 
         body {
-            background: linear-gradient(145deg, #f9f1e7 0%, #f4e5d7 100%);
+            background: linear-gradient(145deg, #f2ebe1 0%, #e8ddd0 100%);
             min-height: 100vh;
             padding: 2rem 1.5rem;
         }
@@ -21,7 +21,7 @@
         .dashboard {
             max-width: 1400px;
             margin: 0 auto;
-            background: rgba(255, 250, 240, 0.85);
+            background: rgba(255, 250, 245, 0.92);
             backdrop-filter: blur(3px);
             border-radius: 2rem;
             box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.2);
@@ -32,7 +32,7 @@
 
         h1 {
             font-size: 2rem;
-            background: linear-gradient(120deg, #9b5e2c, #c47a44);
+            background: linear-gradient(120deg, #8b5a2b, #c47a44);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
@@ -49,6 +49,15 @@
             margin-bottom: 1.8rem;
             padding-right: 26px;
             font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .highlight {
+            background: #fae6d4;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            color: #b1622c;
         }
 
         /* التبويبات */
@@ -266,12 +275,20 @@
             font-size: 0.75rem;
             color: #bc8f64;
         }
+        .info-note {
+            background: #fef0e4;
+            border-radius: 30px;
+            padding: 6px 15px;
+            font-size: 0.75rem;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
 <div class="dashboard">
-    <h1>📚 جدول الحصص الذكي | حفظ تلقائي</h1>
-    <div class="sub">✨ إدارة المعلمين والحصص · حذف فوري · بحث متقدم</div>
+    <h1>📚 جدول الحصص الذكي | معلم واحد لكل الأيام</h1>
+    <div class="sub">✨ عند إضافة معلم في أي يوم، يتم إضافته تلقائياً لجميع الأيام (الأحد ← الخميس) لتسهيل إدارة الحصص.</div>
 
     <div class="tabs-wrapper" id="dayTabs">
         <button class="tab-btn active" data-day="الأحد">🌞 الأحد</button>
@@ -283,7 +300,7 @@
     </div>
 
     <div id="panesContainer"></div>
-    <footer>📌 جميع التعديلات تُحفظ تلقائياً · حذف المعلم يؤدي لحذف جميع حصصه</footer>
+    <footer>📌 حفظ تلقائي · حذف معلم من أي يوم يؤدي لحذفه من كل الأيام وجميع حصصه · إضافة المعلم تُعمم على جميع الأيام فوراً.</footer>
 </div>
 
 <script>
@@ -293,60 +310,58 @@
     const lessonOptions = ["الأولى", "الثانية", "الثالثة", "الرابعة", "الخامسة", "السادسة", "السابعة"];
     
     // هيكل البيانات الرئيسي
-    let dayTeachers = {};    // { "الأحد": ["خالد","منى"] }
-    let daySchedule = {};    // { "الأحد": [lesson0=[], lesson1=[] ...] }
+    let globalTeachers = [];      // قائمة موحدة بكل المعلمين (لجميع الأيام)
+    let daySchedule = {};         // { "الأحد": [lesson0=[], lesson1=[] ...] }
     
     // تحميل من localStorage
     function loadFromStorage() {
-        const stored = localStorage.getItem("smartScheduleData");
+        const stored = localStorage.getItem("unifiedScheduleData");
         if (stored) {
             try {
                 const data = JSON.parse(stored);
-                if (data.dayTeachers) dayTeachers = data.dayTeachers;
+                if (data.globalTeachers) globalTeachers = data.globalTeachers;
                 if (data.daySchedule) daySchedule = data.daySchedule;
             } catch(e) {}
         }
-        // التأكد من وجود كل الأيام
+        // التأكد من وجود كل الأيام في daySchedule
         daysList.forEach(day => {
-            if (!dayTeachers[day]) dayTeachers[day] = [];
             if (!daySchedule[day]) daySchedule[day] = Array(7).fill().map(() => []);
         });
+        // التأكد من أن globalTeachers مصفوفة
+        if (!Array.isArray(globalTeachers)) globalTeachers = [];
     }
     
     // حفظ تلقائي
     function saveToStorage() {
         const toStore = {
-            dayTeachers: dayTeachers,
+            globalTeachers: globalTeachers,
             daySchedule: daySchedule
         };
-        localStorage.setItem("smartScheduleData", JSON.stringify(toStore));
+        localStorage.setItem("unifiedScheduleData", JSON.stringify(toStore));
     }
     
-    // تهيئة الهيكل لأي يوم
-    function ensureDayStructure(day) {
-        if (!dayTeachers[day]) dayTeachers[day] = [];
-        if (!daySchedule[day]) daySchedule[day] = Array(7).fill().map(() => []);
-    }
-    
-    // إضافة معلم
-    function addTeacherToDay(day, teacherName) {
+    // إضافة معلم لجميع الأيام (فقط الاسم، بدون حصص)
+    function addTeacherToAllDays(teacherName) {
         if (!teacherName.trim()) return false;
-        if (!dayTeachers[day].includes(teacherName)) {
-            dayTeachers[day].push(teacherName);
-            saveToStorage();
-            return true;
-        }
-        return false;
+        if (globalTeachers.includes(teacherName)) return false; // مكرر
+        globalTeachers.push(teacherName);
+        saveToStorage();
+        return true;
     }
     
-    // حذف معلم + حذف جميع حصصه
-    function deleteTeacherCompletely(day, teacherName) {
-        if (!dayTeachers[day]) return false;
-        dayTeachers[day] = dayTeachers[day].filter(t => t !== teacherName);
-        // حذف كل الحصص التي تحمل هذا المعلم
-        for (let i = 0; i < 7; i++) {
-            if (daySchedule[day] && daySchedule[day][i]) {
-                daySchedule[day][i] = daySchedule[day][i].filter(entry => entry.teacherName !== teacherName);
+    // حذف معلم من كل الأيام + حذف جميع حصصه
+    function deleteTeacherCompletely(teacherName) {
+        if (!globalTeachers.includes(teacherName)) return false;
+        // إزالة من القائمة العامة
+        globalTeachers = globalTeachers.filter(t => t !== teacherName);
+        // حذف كل الحصص التي تحمل هذا المعلم من كل الأيام
+        for (let day of daysList) {
+            if (daySchedule[day]) {
+                for (let i = 0; i < 7; i++) {
+                    if (daySchedule[day][i]) {
+                        daySchedule[day][i] = daySchedule[day][i].filter(entry => entry.teacherName !== teacherName);
+                    }
+                }
             }
         }
         saveToStorage();
@@ -363,20 +378,26 @@
         return false;
     }
     
-    // إضافة حصة جديدة
+    // إضافة حصة جديدة (المعلم يجب أن يكون موجوداً في globalTeachers)
     function addLessonToDay(day, teacherName, className, lessonIndex) {
-        ensureDayStructure(day);
-        if (!dayTeachers[day].includes(teacherName)) {
-            dayTeachers[day].push(teacherName);
+        if (!globalTeachers.includes(teacherName)) {
+            alert(`المعلم "${teacherName}" غير موجود في القائمة العامة. أضفه أولاً.`);
+            return false;
         }
+        if (!daySchedule[day]) daySchedule[day] = Array(7).fill().map(() => []);
         daySchedule[day][lessonIndex].push({ teacherName, className });
         saveToStorage();
         return true;
     }
     
+    // دالة للتأكد من هيكل اليوم
+    function ensureDaySchedule(day) {
+        if (!daySchedule[day]) daySchedule[day] = Array(7).fill().map(() => []);
+    }
+    
     // عرض تبويب اليوم
     function generateDayContent(day) {
-        ensureDayStructure(day);
+        ensureDaySchedule(day);
         const scheduleData = daySchedule[day];
         // بناء الجدول مع أزرار حذف لكل حصة
         let tableRows = "";
@@ -400,28 +421,31 @@
                           </tr>`;
         }
         
-        // قائمة المعلمين + زر حذف بجانب كل معلم
-        const teachersList = dayTeachers[day] || [];
+        // قائمة المعلمين (من globalTeachers) + زر حذف بجانب كل معلم
         let teachersHtml = `<div style="margin: 12px 0 6px 0; display:flex; flex-wrap:wrap; gap:8px;">`;
-        teachersList.forEach(teacher => {
-            teachersHtml += `<span class="teacher-item">
-                                🧑‍🏫 ${escapeHtml(teacher)}
-                                <button class="delete-teacher-btn" data-day="${day}" data-teacher="${escapeHtml(teacher)}" style="background:#f0cfbc; border:none; border-radius:30px; padding:2px 12px;">✖ حذف</button>
-                            </span>`;
-        });
+        if (globalTeachers.length === 0) {
+            teachersHtml += `<span style="color:#a5764e;">لا يوجد معلمون بعد. أضف معلم جديد (سيتم إضافته لجميع الأيام).</span>`;
+        } else {
+            globalTeachers.forEach(teacher => {
+                teachersHtml += `<span class="teacher-item">
+                                    🧑‍🏫 ${escapeHtml(teacher)}
+                                    <button class="delete-teacher-btn" data-teacher="${escapeHtml(teacher)}" style="background:#f0cfbc; border:none; border-radius:30px; padding:2px 12px;">✖ حذف</button>
+                                </span>`;
+            });
+        }
         teachersHtml += `</div>`;
         
-        // قوائم الإضافة
-        const teacherSelectOptions = `<option value="">-- اختر المعلم --</option>` + teachersList.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+        // قوائم الإضافة (المعلمين من القائمة العامة)
+        const teacherSelectOptions = `<option value="">-- اختر المعلم --</option>` + globalTeachers.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
         const classSelectOptions = classOptions.map(c => `<option value="${c}">${c}</option>`).join('');
         const lessonSelectOptions = lessonOptions.map(ls => `<option value="${ls}">الحصة ${ls}</option>`).join('');
         
         return `
             <div class="add-card">
                 <div class="input-group">
-                    <label>👨‍🏫 إضافة معلم جديد (${day})</label>
-                    <input type="text" id="teacherNameInput-${day}" placeholder="مثال: خالد العلوي">
-                    <button class="btn-primary add-teacher-btn" data-day="${day}">➕ إضافة المعلم</button>
+                    <label>👨‍🏫 إضافة معلم جديد (سيظهر في جميع الأيام)</label>
+                    <input type="text" id="teacherNameInput-${day}" placeholder="مثال: خالد العلوي" autocomplete="off">
+                    <button class="btn-primary add-teacher-btn" data-day="${day}">➕ إضافة المعلم (لجميع الأيام)</button>
                 </div>
                 <div class="input-group">
                     <label>📚 إضافة حصة (المعلم + الصف + الحصة)</label>
@@ -438,7 +462,7 @@
                 </table>
             </div>
             <div style="margin-top: 12px; background:#fff6ed; border-radius: 30px; padding: 10px 18px;">
-                <strong>📋 قائمة المعلمين (${day}) :</strong> ${teachersHtml || "<span style='color:#a5764e;'>لا يوجد معلمون بعد</span>"}
+                <strong>📋 قائمة المعلمين (موحدة لجميع الأيام) :</strong> ${teachersHtml}
             </div>
         `;
     }
@@ -478,18 +502,19 @@
     
     // ربط أحداث الحذف والإضافة داخل تبويب اليوم
     function attachDayEvents(day) {
-        // إضافة معلم
+        // إضافة معلم (يضاف لجميع الأيام)
         const addTeacherBtn = document.querySelector(`#pane-${day} .add-teacher-btn`);
         if (addTeacherBtn) {
             addTeacherBtn.addEventListener('click', () => {
                 const inputField = document.getElementById(`teacherNameInput-${day}`);
                 const teacherName = inputField.value.trim();
                 if (!teacherName) return alert("أدخل اسم المعلم");
-                if (addTeacherToDay(day, teacherName)) {
-                    alert(`✅ تم إضافة "${teacherName}" ليوم ${day}`);
+                if (addTeacherToAllDays(teacherName)) {
+                    alert(`✅ تم إضافة المعلم "${teacherName}" لجميع الأيام (الأحد → الخميس)`);
                     inputField.value = '';
-                    refreshDayPane(day);
-                } else alert("المعلم موجود بالفعل في هذا اليوم");
+                    // تحديث كل أيام العرض لأن القائمة تغيرت
+                    refreshAllDaysPanes();
+                } else alert("المعلم موجود بالفعل في القائمة العامة");
             });
         }
         // إضافة حصة
@@ -502,16 +527,16 @@
                 const className = classSelect.value;
                 const lessonSelect = document.getElementById(`lessonSelect-${day}`);
                 const lessonName = lessonSelect.value;
-                if (!teacherName) return alert("اختر معلماً أولاً (أضف معلم إن لم يوجد)");
+                if (!teacherName) return alert("اختر معلماً من القائمة (أضف معلم أولاً ليظهر)");
                 if (!className) return alert("اختر الصف");
                 if (!lessonName) return alert("اختر الحصة");
                 const lessonIdx = lessonOptions.indexOf(lessonName);
                 addLessonToDay(day, teacherName, className, lessonIdx);
-                alert(`✅ تمت إضافة الحصة ${lessonName} للمعلم ${teacherName} (${className})`);
+                alert(`✅ تمت إضافة الحصة ${lessonName} للمعلم ${teacherName} (${className}) في يوم ${day}`);
                 refreshDayPane(day);
             });
         }
-        // أزرار حذف الحصص (delegation لأنها تظهر ديناميكياً)
+        // أزرار حذف الحصص (delegation)
         const container = document.querySelector(`#pane-${day}`);
         if (container) {
             container.querySelectorAll('.delete-lesson-btn').forEach(btn => {
@@ -528,20 +553,26 @@
                 btn.addEventListener('click', handler);
                 btn.tempLessonHandler = handler;
             });
-            // حذف المعلمين
+            // حذف المعلمين (من القائمة العامة)
             container.querySelectorAll('.delete-teacher-btn').forEach(btn => {
                 btn.removeEventListener('click', window.tempTeacherHandler);
                 const teacherHandler = (e) => {
-                    const dayAttr = btn.getAttribute('data-day');
                     const teacher = btn.getAttribute('data-teacher');
-                    if (confirm(`⚠️ سيتم حذف المعلم "${teacher}" وجميع حصصه. هل أنت متأكد؟`)) {
-                        deleteTeacherCompletely(dayAttr, teacher);
-                        refreshDayPane(dayAttr);
+                    if (confirm(`⚠️ سيتم حذف المعلم "${teacher}" من جميع الأيام وجميع حصصه. هل أنت متأكد؟`)) {
+                        deleteTeacherCompletely(teacher);
+                        refreshAllDaysPanes(); // تحديث كل التبويبات
                     }
                 };
                 btn.addEventListener('click', teacherHandler);
                 btn.tempTeacherHandler = teacherHandler;
             });
+        }
+    }
+    
+    // تحديث جميع أيام العرض (عند إضافة معلم جديد أو حذف معلم)
+    function refreshAllDaysPanes() {
+        for (let day of daysList) {
+            refreshDayPane(day);
         }
     }
     
@@ -558,7 +589,7 @@
                     return;
                 }
                 const lessonIdx = lessonOptions.indexOf(selectedLesson);
-                ensureDayStructure(selectedDay);
+                ensureDaySchedule(selectedDay);
                 const lessonsData = daySchedule[selectedDay][lessonIdx] || [];
                 if (lessonsData.length === 0) {
                     resultArea.innerHTML = `<div style="background:#f6e4d6; padding:20px; border-radius:28px;">📭 لا يوجد معلمون يدرّسون الحصة ${selectedLesson} يوم ${selectedDay}.</div>`;
@@ -632,23 +663,19 @@
         });
     }
     
-    // بيانات تجريبية (لتوضيح الميزات) ولكن بدون تداخل مع الحفظ التلقائي إن وجدت بيانات قديمة
+    // بيانات تجريبية أولية (إذا كانت فارغة)
     function initDemoIfEmpty() {
-        let anyData = false;
-        daysList.forEach(day => { if ((dayTeachers[day] && dayTeachers[day].length) || (daySchedule[day] && daySchedule[day].some(arr => arr.length))) anyData = true; });
-        if (!anyData) {
-            addTeacherToDay("الأحد", "أحمد السيد");
-            addTeacherToDay("الأحد", "نورة الهاشمي");
+        if (globalTeachers.length === 0) {
+            addTeacherToAllDays("أحمد السيد");
+            addTeacherToAllDays("نورة الهاشمي");
+            addTeacherToAllDays("خالد المنصور");
+            // إضافة بعض الحصص كأمثلة
             addLessonToDay("الأحد", "أحمد السيد", "أول١", 0);
             addLessonToDay("الأحد", "نورة الهاشمي", "ثاني٢", 4);
-            addTeacherToDay("الإثنين", "خالد المنصور");
             addLessonToDay("الإثنين", "خالد المنصور", "ثالث٣", 2);
-            addTeacherToDay("الثلاثاء", "فاطمة الزهراء");
-            addLessonToDay("الثلاثاء", "فاطمة الزهراء", "أول٢", 5);
-            addTeacherToDay("الأربعاء", "عمر الفاروق");
-            addLessonToDay("الأربعاء", "عمر الفاروق", "ثاني١", 1);
-            addTeacherToDay("الخميس", "ليلى الشامسي");
-            addLessonToDay("الخميس", "ليلى الشامسي", "ثالث٢", 3);
+            addLessonToDay("الثلاثاء", "أحمد السيد", "أول٢", 5);
+            addLessonToDay("الأربعاء", "نورة الهاشمي", "ثاني١", 1);
+            addLessonToDay("الخميس", "خالد المنصور", "ثالث٢", 3);
         }
     }
     
@@ -656,7 +683,7 @@
     
     // بدء التشغيل
     loadFromStorage();
-    daysList.forEach(day => ensureDayStructure(day));
+    daysList.forEach(day => ensureDaySchedule(day));
     initDemoIfEmpty();
     renderAllPanes();
     initTabsNavigation();
