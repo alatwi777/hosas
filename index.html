@@ -2,563 +2,671 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>نظام جدول الحصص - المعلمين والفصول</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>نظام جدول الحصص المتقدم | المعلمين والفصول</title>
     <style>
         * {
-            box-sizing: border-box;
-            font-family: 'Segoe UI', 'Tahoma', system-ui, sans-serif;
-        }
-        body {
-            background: #f0f7ff;
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Tajawal', system-ui, -apple-system, sans-serif;
         }
-        .container {
+
+        body {
+            background: linear-gradient(135deg, #f5f7fe 0%, #e9eefa 100%);
+            padding: 2rem 1.5rem;
+            min-height: 100vh;
+        }
+
+        .dashboard {
             max-width: 1400px;
             margin: 0 auto;
-            background: white;
-            border-radius: 32px;
-            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.15);
+            background: rgba(255,255,255,0.45);
+            backdrop-filter: blur(2px);
+            border-radius: 2rem;
+            box-shadow: 0 25px 45px -12px rgba(0,0,0,0.2);
             overflow: hidden;
-            padding: 20px 24px 32px 24px;
-        }
-        h1 {
-            font-size: 1.8rem;
-            color: #1e3a5f;
-            margin-top: 0;
-            margin-bottom: 1rem;
-            border-right: 6px solid #2c7da0;
-            padding-right: 18px;
-        }
-        /* tabs style */
-        .tabs {
-            display: flex;
-            gap: 12px;
-            border-bottom: 2px solid #cbd5e1;
-            margin-bottom: 28px;
-        }
-        .tab-btn {
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            font-weight: bold;
-            padding: 12px 28px;
-            cursor: pointer;
-            border-radius: 30px 30px 0 0;
+            padding: 1.2rem 1.8rem 2rem 1.8rem;
             transition: all 0.2s;
-            color: #2c3e66;
         }
+
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(120deg, #1e3c72, #2b4c7c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-right: 5px solid #ff9f4a;
+            padding-right: 20px;
+        }
+
+        .sub {
+            color: #4a627a;
+            margin-bottom: 1.8rem;
+            font-weight: 500;
+            padding-right: 26px;
+            font-size: 0.9rem;
+        }
+
+        /* تصميم التبويبات */
+        .tabs-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 28px;
+            border-bottom: 2px solid rgba(46, 125, 150, 0.2);
+            padding-bottom: 6px;
+        }
+
+        .tab-btn {
+            background: #ffffffcc;
+            backdrop-filter: blur(4px);
+            border: none;
+            padding: 10px 24px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            border-radius: 40px;
+            cursor: pointer;
+            color: #1f4e6e;
+            transition: 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .tab-btn i {
+            margin-left: 6px;
+        }
+
         .tab-btn.active {
-            background: #2c7da0;
+            background: #ff9f4a;
             color: white;
-            box-shadow: 0 -2px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 8px 18px rgba(255, 159, 74, 0.3);
+            transform: scale(1.02);
         }
-        .tab-content {
+
+        .tab-btn:hover:not(.active) {
+            background: #cbdff2;
+            transform: translateY(-2px);
+        }
+
+        /* محتوى التبويبات */
+        .tab-pane {
             display: none;
-            animation: fade 0.2s ease;
+            animation: fadeSlide 0.25s ease-out;
         }
-        .tab-content.active {
+
+        .tab-pane.active {
             display: block;
         }
-        @keyframes fade {
-            from { opacity: 0; transform: translateY(6px);}
+
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(8px);}
             to { opacity: 1; transform: translateY(0);}
         }
-        /* buttons row */
-        .button-panel {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 28px;
-            background: #eef2fa;
-            padding: 16px 20px;
-            border-radius: 40px;
-            align-items: center;
-        }
-        .btn {
+
+        /* بطاقة الإضافة */
+        .add-card {
             background: white;
-            border: none;
-            padding: 8px 18px;
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            transition: 0.1s linear;
-            color: #1e4663;
-            border: 1px solid #cbdbe0;
-        }
-        .btn-primary {
-            background: #1e5a7a;
-            color: white;
-            border: none;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .btn-primary:hover {
-            background: #0f4a68;
-            transform: scale(0.97);
-        }
-        .btn-lesson {
-            background: #e9f0f9;
-            border-right: 4px solid #2c7da0;
-            font-weight: bold;
-        }
-        .btn:hover {
-            background: #d9e2ef;
-            transform: translateY(-1px);
-        }
-        .form-card {
-            background: #f9fbfe;
             border-radius: 28px;
-            padding: 18px 22px;
-            margin-bottom: 28px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-            border: 1px solid #e2edf7;
-        }
-        .flex-row {
+            padding: 1.4rem 1.8rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.05);
             display: flex;
             flex-wrap: wrap;
-            gap: 20px;
             align-items: flex-end;
+            gap: 1.2rem;
+            border: 1px solid rgba(255, 255, 255, 0.7);
         }
+
         .input-group {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
+            min-width: 150px;
+            flex: 1;
         }
+
         .input-group label {
-            font-weight: 600;
-            color: #1f4e6e;
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: #2c5a7a;
+            letter-spacing: 0.3px;
+        }
+
+        .input-group input, .input-group select {
+            padding: 10px 14px;
+            border-radius: 40px;
+            border: 1.5px solid #dce5f0;
+            background: #fefefe;
+            font-size: 0.9rem;
+            transition: 0.2s;
+            outline: none;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            border-color: #ff9f4a;
+            box-shadow: 0 0 0 3px rgba(255, 159, 74, 0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(100deg, #2c7da0, #1f6390);
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
             font-size: 0.85rem;
         }
-        input, select {
-            padding: 8px 14px;
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(100deg, #236b8a, #175072);
+            box-shadow: 0 8px 18px rgba(44, 125, 160, 0.3);
+        }
+
+        .btn-success {
+            background: #f4a261;
+            box-shadow: 0 2px 8px rgba(244, 162, 97, 0.3);
+        }
+
+        .btn-success:hover {
+            background: #e76f51;
+        }
+
+        /* الجدول العصري */
+        .table-container {
+            background: white;
             border-radius: 28px;
-            border: 1px solid #bfd6e8;
-            background: white;
-            font-size: 0.9rem;
-            min-width: 160px;
-        }
-        .table-wrapper {
             overflow-x: auto;
-            border-radius: 24px;
-            border: 1px solid #dee9f2;
-            background: white;
-            margin-top: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid #eef2f9;
         }
-        table {
+
+        .schedule-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 0.9rem;
         }
-        th {
-            background: #e6f0f9;
-            padding: 12px 10px;
-            border-bottom: 2px solid #cbdbe2;
-            color: #1a405b;
+
+        .schedule-table th {
+            background: #fff2e6;
+            padding: 14px 12px;
+            color: #b3512c;
+            font-weight: 800;
+            border-bottom: 2px solid #ffe0cc;
         }
-        td {
-            padding: 10px 8px;
-            border-bottom: 1px solid #e2edf4;
+
+        .schedule-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #f0f2f8;
             vertical-align: top;
         }
-        .day-header {
-            background: #d4e3f0;
-            font-size: 1.1rem;
-        }
-        .badge {
+
+        .lesson-badge {
             background: #eef2fc;
-            border-radius: 40px;
-            padding: 4px 10px;
+            border-radius: 30px;
+            padding: 5px 12px;
+            margin: 4px 6px 4px 0;
             display: inline-block;
-            margin: 2px 4px;
             font-size: 0.8rem;
+            font-weight: 500;
+            color: #1f5e7e;
+            border-right: 3px solid #ffb347;
         }
-        .empty-msg {
-            color: #8aa0b5;
-            padding: 20px;
-            text-align: center;
+
+        .empty-lesson {
+            color: #9eb0c5;
+            font-style: italic;
+            font-size: 0.85rem;
         }
-        .search-result {
-            background: #fef7e0;
-            border-radius: 20px;
-            padding: 15px;
-            margin-top: 20px;
+
+        /* منطقة البحث */
+        .search-card {
+            background: linear-gradient(115deg, #ffffff 0%, #fef7e0 100%);
+            border-radius: 2rem;
+            padding: 1.6rem;
+            margin-bottom: 2rem;
+            border: 1px solid #ffe3b5;
         }
+
+        .result-card {
+            background: white;
+            border-radius: 1.8rem;
+            padding: 1.5rem;
+            min-height: 200px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+
+        .teacher-result {
+            background: #eef6fb;
+            margin: 10px 0;
+            padding: 12px 18px;
+            border-radius: 60px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            border-right: 5px solid #f4a261;
+        }
+
         hr {
-            margin: 18px 0;
+            margin: 16px 0;
+            border-color: #f0e2d4;
         }
+
         footer {
-            font-size: 0.75rem;
+            margin-top: 30px;
             text-align: center;
-            margin-top: 32px;
-            color: #6c86a3;
-        }
-        @media (max-width: 700px) {
-            .button-panel { gap: 8px; }
-            .btn { padding: 6px 12px; font-size: 0.8rem; }
+            font-size: 0.75rem;
+            color: #6d8aac;
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <h1>📚 جدول إدارة الحصص - المعلمون والفصول</h1>
-    <!-- Tabs -->
-    <div class="tabs">
-        <button class="tab-btn active" data-tab="tab-general">📋 الجدول العام</button>
-        <button class="tab-btn" data-tab="tab-search">🔍 البحث</button>
+<div class="dashboard">
+    <h1>📚 جدول المعلمين والفصول الدراسية</h1>
+    <div class="sub">✨ نظام متكامل لإدارة الحصص حسب الأيام · تصميم عصري وحديث</div>
+
+    <!-- تبويبات الأيام (الأحد → الخميس) -->
+    <div class="tabs-wrapper" id="dayTabs">
+        <button class="tab-btn active" data-day="الأحد">🌞 الأحد</button>
+        <button class="tab-btn" data-day="الإثنين">📖 الإثنين</button>
+        <button class="tab-btn" data-day="الثلاثاء">🔥 الثلاثاء</button>
+        <button class="tab-btn" data-day="الأربعاء">💧 الأربعاء</button>
+        <button class="tab-btn" data-day="الخميس">🍃 الخميس</button>
+        <button class="tab-btn" data-day="search" style="background:#ffecb3;">🔍 البحث</button>
     </div>
 
-    <!-- =========================  تبويب الجدول العام ========================= -->
-    <div id="tab-general" class="tab-content active">
-        <!-- أزرار الإضافة -->
-        <div class="button-panel">
-            <button id="addTeacherBtn" class="btn btn-primary">➕ إضافة اسم المعلم</button>
-            <button id="addDayBtn" class="btn btn-primary">📅 إضافة اليوم</button>
-            <button id="addClassBtn" class="btn btn-primary">🏫 إضافة فصل</button>
-            <span style="margin:0 4px; font-weight:bold;">|</span>
-            <span style="font-weight:500;">إضافة الحصة:</span>
-            <button data-lesson="1" class="btn lesson-add-btn btn-lesson">الحصة الأولى</button>
-            <button data-lesson="2" class="btn lesson-add-btn btn-lesson">الحصة الثانية</button>
-            <button data-lesson="3" class="btn lesson-add-btn btn-lesson">الحصة الثالثة</button>
-            <button data-lesson="4" class="btn lesson-add-btn btn-lesson">الحصة الرابعة</button>
-            <button data-lesson="5" class="btn lesson-add-btn btn-lesson">الحصة الخامسة</button>
-            <button data-lesson="6" class="btn lesson-add-btn btn-lesson">الحصة السادسة</button>
-            <button data-lesson="7" class="btn lesson-add-btn btn-lesson">الحصة السابعة</button>
-        </div>
+    <!-- محتوى الأيام + البحث ديناميكي بالجافاسكريبت -->
+    <div id="panesContainer"></div>
 
-        <!-- لوحة الإدخال السريع (يتم عرضها عند الضغط على أي زر إضافة) -->
-        <div id="inputPanel" class="form-card" style="display: none;">
-            <div class="flex-row">
-                <div class="input-group">
-                    <label id="inputLabel" for="dynamicInput">📌 القيمة</label>
-                    <input type="text" id="dynamicInput" placeholder="أدخل القيمة..." autocomplete="off">
-                </div>
-                <div class="input-group" id="extraSelectGroup" style="display: none;">
-                    <label id="extraLabel">اختيار إضافي</label>
-                    <select id="extraSelect"></select>
-                </div>
-                <div class="input-group">
-                    <button id="confirmDynamicBtn" class="btn btn-primary">✅ تأكيد</button>
-                    <button id="cancelDynamicBtn" class="btn">إلغاء</button>
-                </div>
-            </div>
-            <p id="helperMsg" style="font-size:0.75rem; margin-top:10px; color:#3b6e8f;"></p>
-        </div>
-
-        <!-- عرض الجداول: كل يوم له جدول يعرض المعلمين وحصصهم + الفصل -->
-        <div id="daysTablesContainer">
-            <!-- سيتم إنشاء جداول الأيام ديناميكياً -->
-            <div class="empty-msg">⚠️ لا توجد أيام بعد. أضف يوم باستخدام زر "إضافة اليوم"</div>
-        </div>
-    </div>
-
-    <!-- =========================  تبويب البحث ========================= -->
-    <div id="tab-search" class="tab-content">
-        <div class="form-card">
-            <div class="flex-row" style="align-items: center;">
-                <div class="input-group">
-                    <label>📅 اختر اليوم:</label>
-                    <select id="searchDaySelect">
-                        <option value="">-- اختر اليوم --</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label>⏰ اختر الحصة:</label>
-                    <select id="searchLessonSelect">
-                        <option value="">-- اختر الحصة --</option>
-                        <option value="1">الحصة الأولى</option>
-                        <option value="2">الحصة الثانية</option>
-                        <option value="3">الحصة الثالثة</option>
-                        <option value="4">الحصة الرابعة</option>
-                        <option value="5">الحصة الخامسة</option>
-                        <option value="6">الحصة السادسة</option>
-                        <option value="7">الحصة السابعة</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <button id="searchBtn" class="btn btn-primary">🔎 بحث</button>
-                </div>
-            </div>
-        </div>
-        <div id="searchResultArea" style="margin-top: 20px;">
-            <div class="empty-msg">📌 سيظهر هنا جميع المعلمين الذين لديهم حصص في اليوم والحصة المحددة مع الفصول.</div>
-        </div>
-    </div>
-    <footer>🗂️ النظام: إضافة معلمين / أيام / فصول · إضافة حصص للمعلمين في أي يوم وحصة محددة مع الفصل</footer>
+    <footer>📌 ملاحظة: كل يوم له جدول مستقل · إضافة المعلمين / الصفوف / الحصص يتم تخزينها فوراً</footer>
 </div>
 
 <script>
-    // ---------------------------------- هيكل البيانات ----------------------------------
-    // data structure:
-    // days = ["الاثنين", "الثلاثاء", ...] (مصفوفة بأسماء الأيام حسب ترتيب الإضافة)
-    // teachers = ["أ. أحمد", "أ. سعاد", ...]
-    // classes = ["1/أ", "2/ب", ...]
-    // schedule[dayIndex][lessonIndex] = array من كائنات { teacherName, className }
-    // حيث lessonIndex من 0 إلى 6 (0->الحصة الأولى ... 6->السابعة)
-    let days = [];          // قائمة بأسماء الأيام
-    let teachers = [];      // قائمة بأسماء المعلمين
-    let classes = [];       // قائمة بأسماء الفصول
+    // ------------------- هيكل البيانات -------------------
+    // الأيام المعتمدة (خمسة أيام)
+    const daysList = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس"];
     
-    // schedule[dayName][lessonNumber-1] = [{ teacherName, className }]
-    let schedule = {};      // key: dayName, value: مصفوفة طولها 7 (كل عنصر array من الحصص)
+    // قوائم الصفوف الثابتة (المطلوبة)
+    const classOptions = ["أول١", "أول٢", "ثاني١", "ثاني٢", "ثالث١", "ثالث٢", "ثالث٣"];
     
-    // تهيئة أولية لجداول فارغة
-    function initScheduleForDay(dayName) {
-        if (!schedule[dayName]) {
-            schedule[dayName] = Array(7).fill().map(() => []);
+    // قوائم الحصص (7 حصص)
+    const lessonOptions = ["الأولى", "الثانية", "الثالثة", "الرابعة", "الخامسة", "السادسة", "السابعة"];
+    
+    // هيكل البيانات الأساسي:
+    // لكل يوم -> مصفوفة من المعلمين (لكل معلم اسمه وصفه، وحصصه عبارة عن مصفوفة من الحصص المضافة)
+    // ولكن الأفضل: لكل يوم: teachersList[] أسماء المعلمين, و scheduleMap[teacherName][lessonIndex] = className
+    // لسهولة العرض والبحث نستخدم كائن schedule[day][lessonIndex] = [{ teacherName, className }]
+    // مع الاحتفاظ بقائمة المعلمين لكل يوم منفصلة (حسب الطلب، كل يوم معلموه مستقلون)
+    let dayTeachers = {};      // { "الأحد": ["خالد", "منى"], ... }
+    let daySchedule = {};      // { "الأحد": [lesson0 = [], lesson1=[], ... lesson6=[]] }
+    
+    // تهيئة الهيكل لكل يوم
+    function initDayStructures(day) {
+        if (!dayTeachers[day]) dayTeachers[day] = [];
+        if (!daySchedule[day]) {
+            // مصفوفة من 7 حصص (كل حصة تحتوي على مصفوفة من الكائنات)
+            daySchedule[day] = Array(7).fill().map(() => []);
         }
     }
     
-    // تحديث عرض الجداول العامة
-    function renderGeneralTables() {
-        const container = document.getElementById('daysTablesContainer');
-        if (!days.length) {
-            container.innerHTML = '<div class="empty-msg">📭 لا توجد أيام مسجلة. استخدم زر "إضافة اليوم" لإضافة أيام مثل الاثنين، الثلاثاء...</div>';
-            return;
-        }
-        
-        let html = '';
-        for (let i = 0; i < days.length; i++) {
-            const dayName = days[i];
-            initScheduleForDay(dayName);
-            const daySchedule = schedule[dayName];
-            // بناء جدول اليوم
-            html += `<div style="margin-bottom: 40px; background: #ffffff; border-radius: 28px; padding: 8px 0 12px 0; box-shadow: 0 6px 14px rgba(0,0,0,0.03);">
-                        <h3 style="background: #eef2fc; display: inline-block; padding: 8px 24px; border-radius: 40px; margin: 10px 0 12px 10px;">📆 ${escapeHtml(dayName)}</h3>
-                        <div class="table-wrapper">
-                            <table>
-                                <thead>
-                                    <tr><th style="width:120px">الحصة</th><th>المعلمون مع الفصول</th></tr>
-                                </thead>
-                                <tbody>`;
-            for (let lessonIdx = 0; lessonIdx < 7; lessonIdx++) {
-                const lessonNumber = lessonIdx + 1;
-                const entries = daySchedule[lessonIdx] || [];
-                let cellContent = '';
-                if (entries.length === 0) {
-                    cellContent = '<span style="color:#9aaebf;">— لا توجد حصص —</span>';
-                } else {
-                    entries.forEach(entry => {
-                        cellContent += `<div class="badge">🧑‍🏫 ${escapeHtml(entry.teacherName)}  |  🏫 ${escapeHtml(entry.className)}</div>`;
-                    });
-                }
-                html += `<tr>
-                            <td style="font-weight:bold; background:#f8fafd;">الحصة ${lessonNumber}</td>
-                            <td>${cellContent}</td>
-                         </tr>`;
-            }
-            html += `</tbody></table></div></div>`;
-        }
-        container.innerHTML = html;
-        
-        // تحديث قائمة أيام البحث
-        updateSearchDaySelect();
+    // دالة مساعدة للحصول على فهرس الحصة من النص ("الأولى" => 0)
+    function getLessonIndex(lessonName) {
+        const idx = lessonOptions.indexOf(lessonName);
+        return idx !== -1 ? idx : 0;
     }
     
-    // تحديث القائمة المنسدلة للبحث
-    function updateSearchDaySelect() {
-        const select = document.getElementById('searchDaySelect');
-        if (!select) return;
-        const currentVal = select.value;
-        select.innerHTML = '<option value="">-- اختر اليوم --</option>';
-        days.forEach(day => {
-            select.innerHTML += `<option value="${escapeHtml(day)}" ${currentVal === day ? 'selected' : ''}>${escapeHtml(day)}</option>`;
+    // دالة إضافة معلم لليوم (لا مكرر)
+    function addTeacherToDay(day, teacherName) {
+        if (!teacherName.trim()) return false;
+        if (!dayTeachers[day].includes(teacherName)) {
+            dayTeachers[day].push(teacherName);
+            return true;
+        }
+        return false;
+    }
+    
+    // إضافة حصة (المعلم، الصف، رقم الحصة)
+    function addLessonToDay(day, teacherName, className, lessonIndex) {
+        // التأكد من وجود المعلم في قائمة معلمي اليوم (إن لم يوجد يُضاف تلقائياً)
+        if (!dayTeachers[day].includes(teacherName)) {
+            dayTeachers[day].push(teacherName);
+        }
+        // التأكد من وجود المصفوفة
+        if (!daySchedule[day]) initDayStructures(day);
+        // نضيف الكائن
+        daySchedule[day][lessonIndex].push({
+            teacherName: teacherName,
+            className: className
         });
+        return true;
     }
     
-    // وظائف الإضافة: معالج الأزرار يحدد نوع العملية
-    let currentAction = null;   // 'teacher', 'day', 'class', 'lesson'
-    let selectedLessonNumber = null; // 1..7 عند إضافة حصة
-    let selectedDayForLesson = null;  // اليوم المختار للحصة (سيتم اختياره من قائمة منسدلة)
+    // جلب جميع الحصص الخاصة بمعلم في يوم معين (لعرض الجدول)
+    // لكن الجدول سيعرض بشكل منظم: لكل حصة المعلمين والصفوف
     
-    // إظهار لوحة الإدخال حسب الإجراء
-    function showInputPanelForAction(action, lessonNum = null) {
-        const panel = document.getElementById('inputPanel');
-        const inputLabel = document.getElementById('inputLabel');
-        const dynamicInput = document.getElementById('dynamicInput');
-        const extraSelectGroup = document.getElementById('extraSelectGroup');
-        const extraSelect = document.getElementById('extraSelect');
-        const helperMsg = document.getElementById('helperMsg');
-        
-        // إعادة تعيين
-        extraSelectGroup.style.display = 'none';
-        helperMsg.innerText = '';
-        dynamicInput.value = '';
-        
-        if (action === 'teacher') {
-            inputLabel.innerText = '👩‍🏫 اسم المعلم الجديد:';
-            helperMsg.innerText = 'مثال: أ. محمد, أ. فاطمة';
-            extraSelectGroup.style.display = 'none';
-        } 
-        else if (action === 'day') {
-            inputLabel.innerText = '📅 اسم اليوم (مثال: الاثنين, الثلاثاء):';
-            helperMsg.innerText = 'أضف يوم جديد مثل الأحد، الإثنين...';
-            extraSelectGroup.style.display = 'none';
+    // ------------------- دوال العرض -------------------
+    // عرض تبويب معين (اليوم أو البحث)
+    let currentActiveDay = "الأحد";
+    
+    // بناء كل التبويبات
+    function renderAllPanes() {
+        const container = document.getElementById("panesContainer");
+        if (!container) return;
+        let panesHtml = "";
+        // إنشاء تبويبات الأيام الخمسة
+        for (let day of daysList) {
+            panesHtml += `<div class="tab-pane" id="pane-${day}" data-day="${day}">
+                            ${generateDayContent(day)}
+                          </div>`;
         }
-        else if (action === 'class') {
-            inputLabel.innerText = '🏫 اسم الفصل (مثال: 3/أ, 2/ب):';
-            helperMsg.innerText = 'أضف فصلاً دراسياً جديداً';
-            extraSelectGroup.style.display = 'none';
+        // إضافة تبويب البحث
+        panesHtml += `<div class="tab-pane" id="pane-search" data-day="search">
+                        ${generateSearchContent()}
+                      </div>`;
+        container.innerHTML = panesHtml;
+        
+        // إعادة ربط الأحداث لكل تبويب (أزرار الإضافة)
+        for (let day of daysList) {
+            attachDayEvents(day);
         }
-        else if (action === 'lesson') {
-            inputLabel.innerText = '✏️ اختر اليوم الذي تريد إضافة الحصة فيه:';
-            // نحتاج قائمة منسدلة بالأيام المتاحة لاختيار اليوم
-            extraSelectGroup.style.display = 'flex';
-            extraSelect.innerHTML = '';
-            if (days.length === 0) {
-                helperMsg.innerText = '⚠️ لا توجد أيام مسجلة بعد، أضف يوم أولاً!';
-                extraSelect.innerHTML = '<option disabled>لا توجد أيام</option>';
+        attachSearchEvents();
+        
+        // إظهار التبويب النشط
+        showTabPane(currentActiveDay);
+    }
+    
+    // إنشاء محتوى اليوم (الأزرار + الجدول)
+    function generateDayContent(day) {
+        // الحصول على الجدول الحالي لهذا اليوم
+        const scheduleData = daySchedule[day] || Array(7).fill().map(() => []);
+        
+        // بناء صفوف الجدول (الحصص السبعة)
+        let tableRows = "";
+        for (let i = 0; i < lessonOptions.length; i++) {
+            const lessonName = lessonOptions[i];
+            const entries = scheduleData[i] || [];
+            let cellContent = "";
+            if (entries.length === 0) {
+                cellContent = `<span class="empty-lesson">— لا توجد حصص —</span>`;
             } else {
-                days.forEach(day => {
-                    extraSelect.innerHTML += `<option value="${escapeHtml(day)}">${escapeHtml(day)}</option>`;
+                entries.forEach(entry => {
+                    cellContent += `<div class="lesson-badge">🧑‍🏫 ${escapeHtml(entry.teacherName)} &nbsp;| 🏫 ${escapeHtml(entry.className)}</div>`;
                 });
-                extraSelect.value = days[0];
             }
-            extraSelectGroup.style.display = 'flex';
-            document.getElementById('extraLabel').innerText = '📅 اختر اليوم:';
-            helperMsg.innerText = `سوف تضيف الحصة ${lessonNum} لهذا اليوم، حدد المعلم والفصل من القوائم القادمة.`;
+            tableRows += `<tr>
+                            <td style="font-weight:700; background:#fbfafc; width:100px;">${lessonName}</td>
+                            <td>${cellContent}</td>
+                          </tr>`;
         }
-        panel.style.display = 'block';
-        currentAction = action;
-        selectedLessonNumber = lessonNum;
-    }
-    
-    // بعد الضغط على تأكيد
-    function handleConfirm() {
-        if (!currentAction) {
-            hideInputPanel();
-            return;
-        }
-        const inputVal = document.getElementById('dynamicInput').value.trim();
-        if (currentAction === 'teacher') {
-            if (inputVal === "") { alert("يرجى إدخال اسم المعلم"); return; }
-            if (teachers.includes(inputVal)) { alert("هذا المعلم موجود بالفعل!"); return; }
-            teachers.push(inputVal);
-            alert(`✅ تم إضافة المعلم: ${inputVal}`);
-            renderGeneralTables(); // إعادة رسم الجداول (قد تظهر حصص جديدة لكن المحتوى يبقى)
-        }
-        else if (currentAction === 'day') {
-            if (inputVal === "") { alert("يرجى إدخال اسم اليوم"); return; }
-            if (days.includes(inputVal)) { alert("هذا اليوم موجود مسبقاً!"); return; }
-            days.push(inputVal);
-            initScheduleForDay(inputVal);
-            alert(`✅ تم إضافة اليوم: ${inputVal}`);
-            renderGeneralTables();
-        }
-        else if (currentAction === 'class') {
-            if (inputVal === "") { alert("يرجى إدخال اسم الفصل"); return; }
-            if (classes.includes(inputVal)) { alert("هذا الفصل موجود مسبقاً!"); return; }
-            classes.push(inputVal);
-            alert(`✅ تم إضافة الفصل: ${inputVal}`);
-            renderGeneralTables();
-        }
-        else if (currentAction === 'lesson' && selectedLessonNumber) {
-            // إضافة حصة: يجب اختيار اليوم من القائمة المنسدلة extraSelect
-            const selectedDay = document.getElementById('extraSelect').value;
-            if (!selectedDay) {
-                alert("الرجاء اختيار اليوم أولاً");
-                return;
-            }
-            if (!days.includes(selectedDay)) {
-                alert("اليوم غير موجود، أضف اليوم أولاً");
-                hideInputPanel();
-                return;
-            }
-            // الخطوة التالية: نطلب اختيار المعلم والفصل (نافذة صغيرة أو prompt منبثق)
-            // بما أن العملية تتطلب تحديد معلم وفصل، سنفتح نافذة تفاعلية ثانية.
-            if (teachers.length === 0) {
-                alert("❌ لا يوجد معلمون مسجلون. الرجاء إضافة معلم أولاً عبر زر 'إضافة اسم المعلم'.");
-                hideInputPanel();
-                return;
-            }
-            if (classes.length === 0) {
-                alert("❌ لا توجد فصول مسجلة. الرجاء إضافة فصل عبر زر 'إضافة فصل'.");
-                hideInputPanel();
-                return;
-            }
-            
-            // عرض قوائم منبثقة لاختيار المعلم والفصل
-            const teacherOptions = teachers.map((t, idx) => `${idx+1}: ${t}`).join('\n');
-            const teacherName = prompt(`اختر المعلم:\n${teacherOptions}\n\nأدخل اسم المعلم بالضبط كما هو مكتوب:`);
-            if (!teacherName) { hideInputPanel(); return; }
-            if (!teachers.includes(teacherName)) {
-                alert("المعلم غير موجود في القائمة! تأكد من الإملاء أو أضفه أولاً.");
-                hideInputPanel();
-                return;
-            }
-            
-            const classOptions = classes.map((c, idx) => `${idx+1}: ${c}`).join('\n');
-            const className = prompt(`اختر الفصل:\n${classOptions}\n\nأدخل اسم الفصل بالضبط:`);
-            if (!className) { hideInputPanel(); return; }
-            if (!classes.includes(className)) {
-                alert("الفصل غير موجود! أضفه أولاً.");
-                hideInputPanel();
-                return;
-            }
-            
-            // إضافة الحصة للجدول
-            const lessonIndex = selectedLessonNumber - 1;
-            initScheduleForDay(selectedDay);
-            const targetLessonArray = schedule[selectedDay][lessonIndex];
-            // نضيف الكائن
-            targetLessonArray.push({ teacherName: teacherName, className: className });
-            alert(`✅ تم إضافة الحصة ${selectedLessonNumber} ليوم ${selectedDay} للمعلم ${teacherName} في الفصل ${className}`);
-            renderGeneralTables();
-        }
-        hideInputPanel();
-    }
-    
-    function hideInputPanel() {
-        document.getElementById('inputPanel').style.display = 'none';
-        currentAction = null;
-        selectedLessonNumber = null;
-    }
-    
-    // البحث: إظهار جميع المعلمين الذين عندهم حصص في (اليوم المختار، الحصة المختارة) مع الفصول
-    function performSearch() {
-        const selectedDay = document.getElementById('searchDaySelect').value;
-        const lessonValue = document.getElementById('searchLessonSelect').value;
-        const resultArea = document.getElementById('searchResultArea');
         
-        if (!selectedDay) {
-            resultArea.innerHTML = '<div class="empty-msg" style="background:#ffe6e6;">⚠️ الرجاء اختيار اليوم أولاً</div>';
-            return;
-        }
-        if (!lessonValue) {
-            resultArea.innerHTML = '<div class="empty-msg" style="background:#ffe6e6;">⚠️ الرجاء اختيار الحصة للبحث</div>';
-            return;
-        }
-        const lessonNum = parseInt(lessonValue);
-        const lessonIndex = lessonNum - 1;
+        // بناء القوائم المنسدلة للصفوف والحصص الخاصة بهذا اليوم
+        const classSelectOptions = classOptions.map(cls => `<option value="${cls}">${cls}</option>`).join('');
+        const lessonSelectOptions = lessonOptions.map((ls, idx) => `<option value="${ls}">الحصة ${ls}</option>`).join('');
         
-        if (!days.includes(selectedDay)) {
-            resultArea.innerHTML = `<div class="empty-msg">📭 اليوم "${selectedDay}" غير موجود في الجداول.</div>`;
-            return;
+        return `
+            <div class="add-card">
+                <div class="input-group">
+                    <label>👨‍🏫 إضافة معلم جديد (ليوم ${day})</label>
+                    <input type="text" id="teacherNameInput-${day}" placeholder="مثال: خالد العلوي" autocomplete="off">
+                    <button class="btn-primary add-teacher-btn" data-day="${day}" style="margin-top:6px;">➕ إضافة المعلم</button>
+                </div>
+                <div class="input-group">
+                    <label>📚 إضافة حصة (المعلم + الصف + الحصة)</label>
+                    <select id="teacherSelect-${day}">
+                        <option value="">-- اختر المعلم --</option>
+                        ${(dayTeachers[day] || []).map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('')}
+                    </select>
+                    <select id="classSelect-${day}">
+                        <option value="">-- اختر الصف --</option>
+                        ${classSelectOptions}
+                    </select>
+                    <select id="lessonSelect-${day}">
+                        <option value="">-- اختر الحصة --</option>
+                        ${lessonSelectOptions}
+                    </select>
+                    <button class="btn-primary btn-success add-lesson-btn" data-day="${day}">📌 إضافة الحصة</button>
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="schedule-table">
+                    <thead>
+                        <tr><th>الحصة</th><th>المعلمون والفصول</th></tr>
+                    </thead>
+                    <tbody>
+                        ${tableRows}
+                    </tbody>
+                </table>
+            </div>
+            <div style="margin-top: 12px; font-size:0.7rem; color:#5a7c9a;">✨ قائمة المعلمين المسجلين في ${day}: ${(dayTeachers[day] || []).map(t => `<strong>${escapeHtml(t)}</strong>`).join(' • ') || "لا يوجد معلمون بعد"}</div>
+        `;
+    }
+    
+    // إنشاء محتوى البحث
+    function generateSearchContent() {
+        const dayOptions = daysList.map(d => `<option value="${d}">${d}</option>`).join('');
+        const lessonSearchOptions = lessonOptions.map(ls => `<option value="${ls}">الحصة ${ls}</option>`).join('');
+        return `
+            <div class="search-card">
+                <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end;">
+                    <div class="input-group">
+                        <label>📅 اختر اليوم</label>
+                        <select id="searchDaySelect">
+                            <option value="">-- اليوم --</option>
+                            ${dayOptions}
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>⏰ اختر الحصة</label>
+                        <select id="searchLessonSelect">
+                            <option value="">-- الحصة --</option>
+                            ${lessonSearchOptions}
+                        </select>
+                    </div>
+                    <button id="performSearchBtn" class="btn-primary" style="background:#e76f51;">🔍 بحث</button>
+                </div>
+            </div>
+            <div class="result-card" id="searchResultArea">
+                <div style="color:#9e7b5c;">📌 سيظهر هنا جميع المعلمين الذين يدرّسون الحصة المحددة في اليوم المختار.</div>
+            </div>
+        `;
+    }
+    
+    // تحديث الجدول الخاص بيوم معين (إعادة بناء المحتوى دون إعادة كل الصفحة)
+    function refreshDayPane(day) {
+        const pane = document.getElementById(`pane-${day}`);
+        if (pane) {
+            // إعادة توليد المحتوى مع الحفاظ على البيانات
+            const newContent = generateDayContent(day);
+            pane.innerHTML = newContent;
+            attachDayEvents(day);
         }
-        initScheduleForDay(selectedDay);
-        const entries = schedule[selectedDay][lessonIndex] || [];
-        if (entries.length === 0) {
-            resultArea.innerHTML = `<div class="search-result">🔍 لا يوجد معلمون في يوم <strong>${escapeHtml(selectedDay)}</strong> للحصة <strong>${lessonNum}</strong>.</div>`;
-            return;
+    }
+    
+    // ربط أحداث اليوم (إضافة معلم، إضافة حصة)
+    function attachDayEvents(day) {
+        // زر إضافة المعلم
+        const addTeacherBtn = document.querySelector(`#pane-${day} .add-teacher-btn`);
+        if (addTeacherBtn) {
+            addTeacherBtn.addEventListener('click', () => {
+                const inputField = document.getElementById(`teacherNameInput-${day}`);
+                const teacherName = inputField.value.trim();
+                if (!teacherName) {
+                    alert("الرجاء إدخال اسم المعلم");
+                    return;
+                }
+                const added = addTeacherToDay(day, teacherName);
+                if (added) {
+                    alert(`✅ تم إضافة المعلم "${teacherName}" ليوم ${day}`);
+                    inputField.value = '';
+                    refreshDayPane(day);
+                } else {
+                    alert(`⚠️ المعلم "${teacherName}" موجود مسبقاً في هذا اليوم`);
+                }
+            });
         }
-        let resultHtml = `<div class="search-result" style="background:#eaf7ea;">
-                            <h4>📌 نتائج البحث (يوم ${escapeHtml(selectedDay)} - الحصة ${lessonNum})</h4>
-                            <ul style="margin:10px 0;">`;
-        entries.forEach(entry => {
-            resultHtml += `<li style="margin-bottom:8px;">🧑‍🏫 <strong>${escapeHtml(entry.teacherName)}</strong>  |  🏫 فصل: ${escapeHtml(entry.className)}</li>`;
+        
+        // زر إضافة الحصة
+        const addLessonBtn = document.querySelector(`#pane-${day} .add-lesson-btn`);
+        if (addLessonBtn) {
+            addLessonBtn.addEventListener('click', () => {
+                const teacherSelect = document.getElementById(`teacherSelect-${day}`);
+                const teacherName = teacherSelect.value;
+                const classSelect = document.getElementById(`classSelect-${day}`);
+                const className = classSelect.value;
+                const lessonSelect = document.getElementById(`lessonSelect-${day}`);
+                const lessonName = lessonSelect.value;
+                
+                if (!teacherName) {
+                    alert("الرجاء اختيار المعلم من القائمة (أضف معلم أولاً)");
+                    return;
+                }
+                if (!className) {
+                    alert("الرجاء اختيار الصف");
+                    return;
+                }
+                if (!lessonName) {
+                    alert("الرجاء اختيار الحصة");
+                    return;
+                }
+                
+                const lessonIdx = getLessonIndex(lessonName);
+                // إضافة الحصة
+                addLessonToDay(day, teacherName, className, lessonIdx);
+                alert(`✅ تم إضافة حصة ${lessonName} للمعلم ${teacherName} في الصف ${className} (${day})`);
+                refreshDayPane(day);
+            });
+        }
+    }
+    
+    // ربط أحداث البحث
+    function attachSearchEvents() {
+        const searchBtn = document.getElementById("performSearchBtn");
+        if (searchBtn) {
+            searchBtn.addEventListener("click", () => {
+                const selectedDay = document.getElementById("searchDaySelect").value;
+                const selectedLesson = document.getElementById("searchLessonSelect").value;
+                const resultArea = document.getElementById("searchResultArea");
+                
+                if (!selectedDay || !selectedLesson) {
+                    resultArea.innerHTML = `<div style="background:#ffe0cc; padding:20px; border-radius:28px;">⚠️ يرجى اختيار اليوم والحصة معاً.</div>`;
+                    return;
+                }
+                
+                const lessonIndex = getLessonIndex(selectedLesson);
+                // التأكد من وجود اليوم في البيانات
+                if (!daySchedule[selectedDay]) {
+                    resultArea.innerHTML = `<div style="background:#f0f0f0; padding:20px; border-radius:28px;">📭 لا توجد بيانات لليوم ${selectedDay} بعد.</div>`;
+                    return;
+                }
+                
+                const lessonsData = daySchedule[selectedDay][lessonIndex] || [];
+                if (lessonsData.length === 0) {
+                    resultArea.innerHTML = `<div class="teacher-result" style="background:#fff0e0;">❌ لا يوجد معلمون يدرّسون الحصة ${selectedLesson} يوم ${selectedDay}.</div>`;
+                    return;
+                }
+                
+                let resultHtml = `<div style="margin-bottom:15px;"><strong>🔎 نتائج البحث :</strong> يوم ${selectedDay} - الحصة ${selectedLesson}</div>`;
+                lessonsData.forEach(entry => {
+                    resultHtml += `<div class="teacher-result">
+                                    <span>🧑‍🏫 <strong>${escapeHtml(entry.teacherName)}</strong></span>
+                                    <span>🏫 الفصل: <strong>${escapeHtml(entry.className)}</strong></span>
+                                  </div>`;
+                });
+                resultArea.innerHTML = resultHtml;
+            });
+        }
+    }
+    
+    // إظهار التبويب المطلوب
+    function showTabPane(dayOrSearch) {
+        // إخفاء كل الألواح
+        const allPanes = document.querySelectorAll('.tab-pane');
+        allPanes.forEach(pane => pane.classList.remove('active'));
+        
+        if (dayOrSearch === "search") {
+            const searchPane = document.getElementById("pane-search");
+            if (searchPane) searchPane.classList.add("active");
+        } else {
+            const targetPane = document.getElementById(`pane-${dayOrSearch}`);
+            if (targetPane) targetPane.classList.add("active");
+        }
+        
+        // تحديث active على الأزرار
+        const btns = document.querySelectorAll('.tab-btn');
+        btns.forEach(btn => {
+            btn.classList.remove('active');
+            const btnDay = btn.getAttribute('data-day');
+            if ((btnDay === dayOrSearch) || (dayOrSearch === "search" && btnDay === "search")) {
+                btn.classList.add('active');
+            }
         });
-        resultHtml += `</ul><p>إجمالي المعلمين: ${entries.length}</p></div>`;
-        resultArea.innerHTML = resultHtml;
     }
     
-    // إعادة تعبئة قائمة البحث عند التغيير
-    function refreshSearchSelect() {
-        updateSearchDaySelect();
+    // تجهيز أزرار التبويب
+    function initTabsNavigation() {
+        const btns = document.querySelectorAll('.tab-btn');
+        btns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const dayVal = btn.getAttribute('data-day');
+                if (dayVal === "search") {
+                    currentActiveDay = "search";
+                    showTabPane("search");
+                } else {
+                    currentActiveDay = dayVal;
+                    showTabPane(dayVal);
+                    // تأكد من تحديث محتوى اليوم إذا كان قديماً
+                    if (daySchedule[dayVal]) refreshDayPane(dayVal);
+                    else refreshDayPane(dayVal);
+                }
+            });
+        });
     }
     
-    // helper html escape
+    // بيانات أولية نموذجية (توضيحية)
+    function loadDemoData() {
+        // إضافة بعض المعلمين والحصص لتبدو الصفحة حية
+        daysList.forEach(day => {
+            initDayStructures(day);
+        });
+        // مثال لليوم الأحد
+        addTeacherToDay("الأحد", "أحمد السيد");
+        addTeacherToDay("الأحد", "نورة الهاشمي");
+        addLessonToDay("الأحد", "أحمد السيد", "أول١", 0); // الحصة الأولى
+        addLessonToDay("الأحد", "نورة الهاشمي", "ثاني٢", 4); // الحصة الخامسة
+        addLessonToDay("الأحد", "أحمد السيد", "ثالث١", 6); // السابعة
+        
+        addTeacherToDay("الإثنين", "خالد المنصور");
+        addLessonToDay("الإثنين", "خالد المنصور", "ثالث٣", 2); // الحصة الثالثة
+        addTeacherToDay("الثلاثاء", "فاطمة الزهراء");
+        addLessonToDay("الثلاثاء", "فاطمة الزهراء", "أول٢", 5);
+        addTeacherToDay("الأربعاء", "عمر الفاروق");
+        addLessonToDay("الأربعاء", "عمر الفاروق", "ثاني١", 1);
+        addTeacherToDay("الخميس", "ليلى الشامسي");
+        addLessonToDay("الخميس", "ليلى الشامسي", "ثالث٢", 3);
+    }
+    
+    // تهيئة أولية كاملة
+    function init() {
+        // تهيئة كل الأيام
+        for (let day of daysList) {
+            initDayStructures(day);
+        }
+        loadDemoData();    // بيانات تجريبية جذابة
+        renderAllPanes();  // بناء واجهة كاملة
+        initTabsNavigation();
+        // تعيين التبويب النشط افتراضياً
+        currentActiveDay = "الأحد";
+        showTabPane("الأحد");
+    }
+    
     function escapeHtml(str) {
         if (!str) return '';
         return str.replace(/[&<>]/g, function(m) {
@@ -566,84 +674,10 @@
             if (m === '<') return '&lt;';
             if (m === '>') return '&gt;';
             return m;
-        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
-            return c;
         });
     }
     
-    // ربط الأزرار
-    function bindEvents() {
-        document.getElementById('addTeacherBtn').addEventListener('click', () => showInputPanelForAction('teacher'));
-        document.getElementById('addDayBtn').addEventListener('click', () => showInputPanelForAction('day'));
-        document.getElementById('addClassBtn').addEventListener('click', () => showInputPanelForAction('class'));
-        const lessonBtns = document.querySelectorAll('.lesson-add-btn');
-        lessonBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const lesson = parseInt(btn.getAttribute('data-lesson'));
-                if (days.length === 0) {
-                    alert("⚠️ الرجاء إضافة يوم أولاً عبر زر 'إضافة اليوم' قبل إضافة الحصص.");
-                    return;
-                }
-                if (teachers.length === 0) {
-                    alert("⚠️ الرجاء إضافة معلم أولاً عبر زر 'إضافة اسم المعلم'.");
-                    return;
-                }
-                if (classes.length === 0) {
-                    alert("⚠️ الرجاء إضافة فصل عبر زر 'إضافة فصل'.");
-                    return;
-                }
-                showInputPanelForAction('lesson', lesson);
-            });
-        });
-        document.getElementById('confirmDynamicBtn').addEventListener('click', handleConfirm);
-        document.getElementById('cancelDynamicBtn').addEventListener('click', hideInputPanel);
-        document.getElementById('searchBtn').addEventListener('click', performSearch);
-        // تحديث قائمة البحث عند تغيير الأيام (سيتم استدعاء بعد أي إضافة)
-    }
-    
-    // تهيئة بيانات نموذجية لتوضيح الفكرة
-    function initDemoData() {
-        if (days.length === 0) {
-            days.push("الاثنين", "الأربعاء");
-            teachers.push("أحمد السيد", "منى الخالدي");
-            classes.push("الصف 2/أ", "الصف 3/ب");
-            initScheduleForDay("الاثنين");
-            initScheduleForDay("الأربعاء");
-            // إضافة بعض الحصص التجريبية
-            schedule["الاثنين"][0] = [{ teacherName: "أحمد السيد", className: "الصف 2/أ" }];
-            schedule["الاثنين"][5] = [{ teacherName: "منى الخالدي", className: "الصف 3/ب" }];
-            schedule["الأربعاء"][2] = [{ teacherName: "أحمد السيد", className: "الصف 3/ب" }, { teacherName: "منى الخالدي", className: "الصف 2/أ" }];
-        }
-        renderGeneralTables();
-    }
-    
-    // تبديل التبويبات
-    function setupTabs() {
-        const tabs = document.querySelectorAll('.tab-btn');
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabId = tab.getAttribute('data-tab');
-                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-                document.getElementById(tabId).classList.add('active');
-                tabs.forEach(btn => btn.classList.remove('active'));
-                tab.classList.add('active');
-                if (tabId === 'tab-search') {
-                    updateSearchDaySelect();
-                    document.getElementById('searchResultArea').innerHTML = '<div class="empty-msg">🔎 اختر اليوم والحصة ثم اضغط بحث.</div>';
-                } else {
-                    renderGeneralTables(); // تحديث الجدول عند الظهور
-                }
-            });
-        });
-    }
-    
-    // بدء التشغيل
-    function start() {
-        bindEvents();
-        setupTabs();
-        initDemoData();
-    }
-    start();
+    init();
 </script>
 </body>
 </html>
