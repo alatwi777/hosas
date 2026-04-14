@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title> جدول حصص المعلمين  متوسطة الحسين بن علي </title>
+    <title>جدول الحصص للمعلمين - متوسطة الحسين بن علي</title>
     <style>
         * {
             margin: 0;
@@ -30,7 +30,7 @@
         }
 
         h1 {
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             background: linear-gradient(120deg, #8b5a2b, #c47a44);
             -webkit-background-clip: text;
             background-clip: text;
@@ -41,6 +41,15 @@
             gap: 8px;
             border-right: 5px solid #e2a76f;
             padding-right: 15px;
+            flex-wrap: wrap;
+        }
+        .school-name {
+            font-size: 0.9rem;
+            background: #e2a76f30;
+            padding: 4px 12px;
+            border-radius: 40px;
+            color: #9b5e2c;
+            font-weight: normal;
         }
 
         .sub {
@@ -279,28 +288,25 @@
             text-align: center;
             font-size: 0.65rem;
             color: #bc8f64;
+            border-top: 1px solid #f0e0d0;
+            padding-top: 12px;
         }
         
-        .conflict-message {
-            background: #ffe0cc;
-            color: #b33c1a;
-            padding: 6px 12px;
-            border-radius: 50px;
-            font-size: 0.7rem;
-            margin-bottom: 10px;
-            display: inline-block;
-        }
         @media (max-width: 640px) {
             .dashboard { padding: 0.8rem; }
             .tab-btn { padding: 4px 12px; font-size: 0.75rem; }
             .add-card { flex-direction: column; align-items: stretch; }
+            h1 { font-size: 1.2rem; }
         }
     </style>
 </head>
 <body>
 <div class="dashboard">
-    <h1>📚 جدول الحصص الذكي | منع التعارض + Enter</h1>
-    <div class="sub">✨ إضافة معلم (Enter) · منع تكرار نفس المعلم/الفصل بنفس الحصة · نتائج بحث متجاوبة</div>
+    <h1>
+        📚 جدول الحصص للمعلمين 
+        <span class="school-name">🏫 متوسطة الحسين بن علي</span>
+    </h1>
+    <div class="sub">✨ إدارة الحصص · منع التعارض · حفظ تلقائي · تصميم متجاوب</div>
 
     <div class="tabs-wrapper" id="dayTabs">
         <button class="tab-btn active" data-day="الأحد">🌞 الأحد</button>
@@ -312,7 +318,7 @@
     </div>
 
     <div id="panesContainer"></div>
-    <footer>📌 حفظ تلقائي · حذف معلم (يؤدي لحذف حصصه) · تعارض يمنع إضافة معلمين بنفس الفصل والحصة</footer>
+    <footer>📌 متوسطة الحسين بن علي - نظام جدول الحصص · حفظ تلقائي · منع تكرار (نفس الفصل/الحصة) · إضافة معلم بالضغط على Enter</footer>
 </div>
 
 <script>
@@ -368,10 +374,10 @@
         return false;
     }
     
-    // فحص التعارض: نفس اليوم، نفس الحصة، نفس الفصل مع معلم آخر (أو نفس المعلم؟ نمنع التكرار مطلقاً)
+    // فحص التعارض: نفس اليوم، نفس الحصة، نفس الفصل
     function isConflict(day, teacherName, className, lessonIndex) {
         const entries = daySchedule[day]?.[lessonIndex] || [];
-        return entries.some(entry => entry.className === className); // نفس الفصل في نفس الحصة
+        return entries.some(entry => entry.className === className);
     }
     
     function addLessonToDay(day, teacherName, className, lessonIndex) {
@@ -380,7 +386,7 @@
             return false;
         }
         if (isConflict(day, teacherName, className, lessonIndex)) {
-            alert(`❌ تعارض: يوجد بالفعل معلم آخر (أو نفس المعلم) يدرس فصل ${className} في نفس الحصة (${lessonOptions[lessonIndex]}) يوم ${day}. لا يمكن إضافة حصة مكررة.`);
+            alert(`❌ تعارض: يوجد بالفعل معلم يدرس فصل ${className} في نفس الحصة (${lessonOptions[lessonIndex]}) يوم ${day}. لا يمكن إضافة حصة مكررة.`);
             return false;
         }
         if (!daySchedule[day]) daySchedule[day] = Array(7).fill().map(() => []);
@@ -439,7 +445,7 @@
                 </div>
             </div>
             <div class="table-container"><table class="schedule-table"><thead><tr><th>الحصة</th><th>المعلمون والفصول</th></tr></thead><tbody>${tableRows}</tbody></table></div>
-            <div style="margin-top: 10px; background:#fff6ed; border-radius: 24px; padding: 8px 12px;"><strong>📋 المعلمون:</strong> ${teachersHtml}</div>
+            <div style="margin-top: 10px; background:#fff6ed; border-radius: 24px; padding: 8px 12px;"><strong>📋 المعلمون (موحد لكل الأيام):</strong> ${teachersHtml}</div>
         `;
     }
     
@@ -478,7 +484,6 @@
     function refreshAllDaysPanes() { daysList.forEach(day => refreshDayPane(day)); }
     
     function attachDayEvents(day) {
-        // إضافة معلم (مع دعم Enter)
         const teacherInput = document.getElementById(`teacherNameInput-${day}`);
         const addTeacherBtn = document.querySelector(`#pane-${day} .add-teacher-btn`);
         const addHandler = () => {
@@ -489,7 +494,6 @@
         if (addTeacherBtn) { addTeacherBtn.removeEventListener('click', addHandler); addTeacherBtn.addEventListener('click', addHandler); }
         if (teacherInput) { teacherInput.removeEventListener('keypress', window.enterHandler); const enterHandler = (e) => { if(e.key === 'Enter') addHandler(); }; teacherInput.addEventListener('keypress', enterHandler); teacherInput.enterHandler = enterHandler; }
         
-        // إضافة حصة
         const addLessonBtn = document.querySelector(`#pane-${day} .add-lesson-btn`);
         if (addLessonBtn) {
             addLessonBtn.addEventListener('click', () => {
@@ -502,7 +506,6 @@
             });
         }
         
-        // حذف الحصص
         const container = document.querySelector(`#pane-${day}`);
         if (container) {
             container.querySelectorAll('.delete-lesson-btn').forEach(btn => {
